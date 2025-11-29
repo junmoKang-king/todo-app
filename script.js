@@ -22,7 +22,7 @@ const pasteBtn = document.getElementById('pasteBtn');
 // ==================== 상태 관리 ====================
 let todos = [];
 let currentCategory = 'monday';
-let copiedTodos = []; // 복사된 할 일 목록
+let copiedTodos = [];
 
 // ==================== 초기화 ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -195,6 +195,21 @@ exportExcel.addEventListener('click', () => {
     if (typeof XLSX === 'undefined') {
         alert('엑셀 라이브러리를 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
         return;
+    }
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const wb = XLSX.utils.book_new();
+    const categories = [
+        { key: 'monday', name: '월요일' }, { key: 'tuesday', name: '화요일' },
+        { key: 'wednesday', name: '수요일' }, { key: 'thursday', name: '목요일' },
+        { key: 'friday', name: '금요일' }, { key: 'saturday', name: '토요일' }, { key: 'sunday', name: '일요일' }
+    ];
+
+    categories.forEach(cat => {
+        const categoryTodos = todos.filter(t => t.category === cat.key);
+        const data = [['시간', '할 일', '완료', '생성일']];
         categoryTodos.forEach(todo => {
             data.push([
                 todo.time || '-', todo.text,
@@ -206,17 +221,17 @@ exportExcel.addEventListener('click', () => {
         XLSX.utils.book_append_sheet(wb, ws, cat.name);
     });
 
-const statsData = [['요일', '전체', '완료', '달성률']];
-categories.forEach(cat => {
-    const categoryTodos = todos.filter(t => t.category === cat.key);
-    const total = categoryTodos.length;
-    const completed = categoryTodos.filter(t => t.completed).length;
-    const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-    statsData.push([cat.name, total, completed, `${percentage}%`]);
-});
-const statsWs = XLSX.utils.aoa_to_sheet(statsData);
-XLSX.utils.book_append_sheet(wb, statsWs, '통계');
-XLSX.writeFile(wb, `todo_${year}-${month}.xlsx`);
+    const statsData = [['요일', '전체', '완료', '달성률']];
+    categories.forEach(cat => {
+        const categoryTodos = todos.filter(t => t.category === cat.key);
+        const total = categoryTodos.length;
+        const completed = categoryTodos.filter(t => t.completed).length;
+        const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+        statsData.push([cat.name, total, completed, `${percentage}%`]);
+    });
+    const statsWs = XLSX.utils.aoa_to_sheet(statsData);
+    XLSX.utils.book_append_sheet(wb, statsWs, '통계');
+    XLSX.writeFile(wb, `todo_${year}-${month}.xlsx`);
 });
 
 // ==================== 로컬 스토리지 ====================
@@ -291,7 +306,7 @@ statsViewBtn.addEventListener('click', () => {
     weeklyStats.style.display = 'block';
 });
 
-// ==================== 수동 저장 (모든 요일 데이터) ====================
+// ==================== 수동 저장 ====================
 saveBtn.addEventListener('click', () => {
     try {
         const dataStr = JSON.stringify(todos, null, 2);
@@ -317,7 +332,7 @@ saveBtn.addEventListener('click', () => {
     }
 });
 
-// ==================== 수동 로드 (모든 요일 데이터) ====================
+// ==================== 수동 로드 ====================
 loadBtn.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -370,10 +385,24 @@ copyBtn.addEventListener('click', () => {
         return;
     }
 
-    // 깊은 복사 (ID와 생성일은 나중에 새로 생성)
     copiedTodos = currentTodos.map(todo => ({
         text: todo.text,
         time: todo.time,
+        completed: false
+    }));
+
+    const categoryNames = {
+        'monday': '월요일', 'tuesday': '화요일', 'wednesday': '수요일',
+        'thursday': '목요일', 'friday': '금요일', 'saturday': '토요일', 'sunday': '일요일'
+    };
+
+    alert(`✅ ${categoryNames[currentCategory]}의 할 일 ${copiedTodos.length}개를 복사했습니다!\n\n다른 요일 탭으로 이동한 후 "다른 요일에 붙여넣기" 버튼을 클릭하세요.`);
+});
+
+// ==================== 다른 요일에 붙여넣기 ====================
+pasteBtn.addEventListener('click', () => {
+    if (copiedTodos.length === 0) {
+        alert('복사된 할 일이 없습니다.\n먼저 "현재 요일 복사" 버튼을 클릭하여 할 일을 복사하세요.');
         return;
     }
 
@@ -391,13 +420,12 @@ copyBtn.addEventListener('click', () => {
     }
 
     if (confirm(message)) {
-        // 복사된 할 일을 현재 카테고리에 추가
         copiedTodos.forEach(copiedTodo => {
             const newTodo = {
-                id: Date.now() + Math.random(), // 고유 ID 생성
+                id: Date.now() + Math.random(),
                 text: copiedTodo.text,
                 time: copiedTodo.time,
-                category: currentCategory, // 현재 선택된 요일로 설정
+                category: currentCategory,
                 completed: false,
                 createdAt: new Date().toISOString()
             };
@@ -434,12 +462,10 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         loadBtn.click();
     }
-    // Ctrl/Cmd + C: 현재 요일 복사
     if ((e.ctrlKey || e.metaKey) && e.key === 'c' && e.shiftKey) {
         e.preventDefault();
         copyBtn.click();
     }
-    // Ctrl/Cmd + V: 다른 요일에 붙여넣기
     if ((e.ctrlKey || e.metaKey) && e.key === 'v' && e.shiftKey) {
         e.preventDefault();
         pasteBtn.click();
