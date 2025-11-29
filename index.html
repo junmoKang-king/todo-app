@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="하루 일과를 효율적으로 관리하는 현대적인 Todo 앱">
+    <meta name="keywords" content="todo, 할일, 일과관리, 투두리스트">
+    <title>하루 일과 관리 - Todo 앱</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">📝 오늘의 할 일</h1>
+                <p class="date" id="currentDate"></p>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="다크 모드 토글">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </header>
+
+        <main class="main">
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" data-category="monday">월</button>
+                    <button class="tab-btn" data-category="tuesday">화</button>
+                    <button class="tab-btn" data-category="wednesday">수</button>
+                    <button class="tab-btn" data-category="thursday">목</button>
+                    <button class="tab-btn" data-category="friday">금</button>
+                    <button class="tab-btn" data-category="weekend">휴일</button>
+                </div>
+
+                <form class="todo-form" id="todoForm">
+                    <input type="time" class="time-input" id="timeInput" aria-label="시간 입력">
+                    <input type="text" class="todo-input" id="todoInput" placeholder="할 일을 입력하세요..." autocomplete="off"
+                        aria-label="할 일 입력">
+                    <button type="submit" class="add-btn" aria-label="할 일 추가">
+                        <span class="add-icon">+</span>
+                    </button>
+                </form>
+
+                <div class="progress-section">
+                    <div class="progress-info">
+                        <span class="progress-text">진행 상황</span>
+                        <span class="progress-count" id="progressCount">0 / 0</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+
+                <div class="view-toggle">
+                    <button class="toggle-btn active" id="todoViewBtn">
+                        📝 오늘 할일
+                    </button>
+                    <button class="toggle-btn" id="statsViewBtn">
+                        📊 주간 달성률
+                    </button>
+                </div>
+
+                <div class="weekly-stats" id="weeklyStats" style="display: none;">
+                    <h3 class="stats-title">📊 이번 주 달성률</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-day">월</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar" id="statMonday"></div>
+                            </div>
+                            <span class="stat-percent" id="percentMonday">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-day">화</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar" id="statTuesday"></div>
+                            </div>
+                            <span class="stat-percent" id="percentTuesday">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-day">수</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar" id="statWednesday"></div>
+                            </div>
+                            <span class="stat-percent" id="percentWednesday">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-day">목</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar" id="statThursday"></div>
+                            </div>
+                            <span class="stat-percent" id="percentThursday">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-day">금</span>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar" id="statFriday"></div>
+                            </div>
+                            <span class="stat-percent" id="percentFriday">0%</span>
+                        </div>
+                    </div>
+                    <div class="stats-average">
+                        <span>주간 평균</span>
+                        <span class="average-percent" id="averagePercent">0%</span>
+                    </div>
+                </div>
+
+                <ul class="todo-list" id="todoList">
+                    <!-- Todo 항목들이 동적으로 추가됩니다 -->
+                </ul>
+
+                <div class="actions">
+                    <button class="copy-btn" id="copyBtn">
+                        <span class="copy-icon">📋</span>
+                        현재 요일 복사
+                    </button>
+                    <button class="paste-btn" id="pasteBtn">
+                        <span class="paste-icon">📌</span>
+                        다른 요일에 붙여넣기
+                    </button>
+                    <button class="save-btn" id="saveBtn">
+                        <span class="save-icon">💾</span>
+                        전체 저장
+                    </button>
+                    <button class="load-btn" id="loadBtn">
+                        <span class="load-icon">📂</span>
+                        전체 불러오기
+                    </button>
+                    <button class="clear-btn" id="clearCompleted">
+                        <span class="clear-icon">🗑️</span>
+                        완료된 항목 삭제
+                    </button>
+                    <button class="export-btn" id="exportExcel">
+                        <span class="export-icon">📊</span>
+                        엑셀로 내보내기
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 하루 일과 관리 앱</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

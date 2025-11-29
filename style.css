@@ -1,0 +1,601 @@
+/* ==================== CSS 변수 (디자인 시스템) ==================== */
+:root {
+    /* 라이트 모드 색상 */
+    --bg-gradient-start: #a78bfa;
+    --bg-gradient-end: #60a5fa;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --accent: #8b5cf6;
+    --accent-hover: #7c3aed;
+    --success: #10b981;
+    --danger: #ef4444;
+    --border: rgba(0, 0, 0, 0.1);
+    --input-bg: #f9fafb;
+    --progress-bg: #e5e7eb;
+
+    /* 간격 */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* 폰트 */
+    --font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* 애니메이션 */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* 다크 모드 색상 */
+[data-theme="dark"] {
+    --bg-gradient-start: #1e1b4b;
+    --bg-gradient-end: #0f172a;
+    --card-bg: rgba(30, 27, 75, 0.8);
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --accent: #a78bfa;
+    --accent-hover: #8b5cf6;
+    --success: #34d399;
+    --danger: #f87171;
+    --border: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --progress-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== 기본 스타일 ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    min-height: 100vh;
+    color: var(--text-primary);
+    line-height: 1.6;
+    transition: background var(--transition-slow);
+}
+
+/* ==================== 컨테이너 ==================== */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==================== 헤더 ==================== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    animation: fadeInDown 0.6s ease;
+}
+
+.header-content {
+    flex: 1;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: var(--spacing-xs);
+}
+
+.date {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 300;
+}
+
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.theme-icon {
+    font-size: 1.5rem;
+}
+
+/* ==================== 메인 콘텐츠 ==================== */
+.main {
+    flex: 1;
+    animation: fadeInUp 0.6s ease;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: var(--spacing-xl);
+    box-shadow: 0 20px 60px var(--card-shadow);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    transition: all var(--transition-normal);
+}
+
+/* ==================== 탭 ==================== */
+.tabs {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.tabs::-webkit-scrollbar-track {
+    background: var(--progress-bg);
+}
+
+.tabs::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.tab-btn {
+    flex: 0 0 auto;
+    min-width: 60px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-btn:hover {
+    background: var(--input-bg);
+    transform: translateY(-2px);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* ==================== Todo 폼 ==================== */
+.todo-form {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.time-input {
+    width: 120px;
+    padding: var(--spacing-md) var(--spacing-sm);
+    font-size: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+.todo-input {
+    flex: 1;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    transition: all var(--transition-fast);
+}
+
+.todo-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+.todo-input::placeholder {
+    color: var(--text-muted);
+}
+
+.add-btn {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.add-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.add-btn:active {
+    transform: scale(0.95);
+}
+
+/* ==================== 진행 상황 ==================== */
+.progress-section {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--input-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-text {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.progress-count {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+.progress-bar-container {
+    height: 8px;
+    background: var(--progress-bg);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+border-radius: 16px;
+border: 1px solid var(--border);
+}
+
+.stats-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.stat-day {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 30px;
+}
+
+.stat-bar-container {
+    flex: 1;
+    height: 20px;
+    background: var(--progress-bg);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.stat-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+    border-radius: 999px;
+    width: 0%;
+    transition: width var(--transition-slow);
+}
+
+.stat-percent {
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 45px;
+    text-align: right;
+}
+
+.stats-average {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.average-percent {
+    color: var(--accent);
+    font-size: 1.2rem;
+}
+
+/* ==================== Todo 리스트 ==================== */
+.todo-list {
+    list-style: none;
+    margin-bottom: var(--spacing-lg);
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: var(--spacing-xs);
+}
+
+.todo-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.todo-list::-webkit-scrollbar-track {
+    background: var(--progress-bg);
+    border-radius: 999px;
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--input-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all var(--transition-normal);
+    animation: slideIn 0.3s ease;
+}
+
+.todo-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.todo-item.completed {
+    opacity: 0.6;
+}
+
+.todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.todo-checkbox {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    accent-color: var(--success);
+}
+
+.todo-time {
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.todo-item.completed .todo-time {
+    color: var(--text-muted);
+    background: rgba(156, 163, 175, 0.1);
+}
+
+.todo-text {
+    flex: 1;
+    font-size: 1rem;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+    opacity: 0;
+}
+
+.todo-item:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: scale(1.1);
+}
+
+/* ==================== 액션 버튼 ==================== */
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.clear-btn,
+.export-btn {
+    background: transparent;
+    border: 2px solid var(--border);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    transition: all var(--transition-normal);
+}
+
+.clear-btn:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    animation: fadeIn 1s ease;
+}
+
+/* ==================== 애니메이션 ==================== */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ==================== 반응형 디자인 ==================== */
+@media (max-width: 768px) {
+    .container {
+        padding: var(--spacing-md);
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: var(--spacing-lg);
+        border-radius: 20px;
+    }
+
+    .todo-form {
+        flex-wrap: wrap;
+    }
+
+    .time-input {
+        width: 100px;
+    }
+
+    .todo-input {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .add-btn {
+        width: 100%;
+        height: 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+    }
+
+    .theme-toggle {
+        align-self: center;
+    }
+}
