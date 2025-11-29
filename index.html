@@ -22,28 +22,9 @@
                 <p class="date" id="currentDate"></p>
             </div>
             <button class="theme-toggle" id="themeToggle" aria-label="다크 모드 토글">
-                <span class="theme-icon">🌙</span>
-            </button>
-        </header>
-
-        <main class="main">
-            <div class="card">
-                <div class="tabs">
-                    <button class="tab-btn active" data-category="monday">월</button>
-                    <button class="tab-btn" data-category="tuesday">화</button>
-                    <button class="tab-btn" data-category="wednesday">수</button>
-                    <button class="tab-btn" data-category="thursday">목</button>
-                    <button class="tab-btn" data-category="friday">금</button>
-                    <button class="tab-btn" data-category="weekend">휴일</button>
-                </div>
-
-                <form class="todo-form" id="todoForm">
-                    <input type="time" class="time-input" id="timeInput" aria-label="시간 입력">
-                    <input type="text" class="todo-input" id="todoInput" placeholder="할 일을 입력하세요..." autocomplete="off"
-                        aria-label="할 일 입력">
-                    <button type="submit" class="add-btn" aria-label="할 일 추가">
-                        <span class="add-icon">+</span>
-                    </button>
+                <button type="submit" class="add-btn" aria-label="할 일 추가">
+                    <span class="add-icon">+</span>
+                </button>
                 </form>
 
                 <div class="progress-section">
@@ -90,66 +71,46 @@
                             <span class="stat-percent" id="percentWednesday">0%</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-day">목</span>
-                            <div class="stat-bar-container">
-                                <div class="stat-bar" id="statThursday"></div>
+                            <ul class="todo-list" id="todoList">
+                                <!-- Todo 항목들이 동적으로 추가됩니다 -->
+                            </ul>
+
+                            <div class="actions">
+                                <button class="copy-btn" id="copyBtn">
+                                    <span class="copy-icon">📋</span>
+                                    현재 요일 복사
+                                </button>
+                                <button class="paste-btn" id="pasteBtn">
+                                    <span class="paste-icon">📌</span>
+                                    다른 요일에 붙여넣기
+                                </button>
+                                <button class="save-btn" id="saveBtn">
+                                    <span class="save-icon">💾</span>
+                                    전체 저장
+                                </button>
+                                <button class="load-btn" id="loadBtn">
+                                    <span class="load-icon">📂</span>
+                                    전체 불러오기
+                                </button>
+                                <button class="clear-btn" id="clearCompleted">
+                                    <span class="clear-icon">🗑️</span>
+                                    완료된 항목 삭제
+                                </button>
+                                <button class="export-btn" id="exportExcel">
+                                    <span class="export-icon">📊</span>
+                                    엑셀로 내보내기
+                                </button>
                             </div>
-                            <span class="stat-percent" id="percentThursday">0%</span>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-day">금</span>
-                            <div class="stat-bar-container">
-                                <div class="stat-bar" id="statFriday"></div>
-                            </div>
-                            <span class="stat-percent" id="percentFriday">0%</span>
-                        </div>
+                        </main>
+
+                        <footer class="footer">
+                            <p>© 2025 하루 일과 관리 앱</p>
+                        </footer>
                     </div>
-                    <div class="stats-average">
-                        <span>주간 평균</span>
-                        <span class="average-percent" id="averagePercent">0%</span>
-                    </div>
-                </div>
 
-                <ul class="todo-list" id="todoList">
-                    <!-- Todo 항목들이 동적으로 추가됩니다 -->
-                </ul>
-
-                <div class="actions">
-                    <button class="copy-btn" id="copyBtn">
-                        <span class="copy-icon">📋</span>
-                        현재 요일 복사
-                    </button>
-                    <button class="paste-btn" id="pasteBtn">
-                        <span class="paste-icon">📌</span>
-                        다른 요일에 붙여넣기
-                    </button>
-                    <button class="save-btn" id="saveBtn">
-                        <span class="save-icon">💾</span>
-                        전체 저장
-                    </button>
-                    <button class="load-btn" id="loadBtn">
-                        <span class="load-icon">📂</span>
-                        전체 불러오기
-                    </button>
-                    <button class="clear-btn" id="clearCompleted">
-                        <span class="clear-icon">🗑️</span>
-                        완료된 항목 삭제
-                    </button>
-                    <button class="export-btn" id="exportExcel">
-                        <span class="export-icon">📊</span>
-                        엑셀로 내보내기
-                    </button>
-                </div>
-            </div>
-        </main>
-
-        <footer class="footer">
-            <p>© 2025 하루 일과 관리 앱</p>
-        </footer>
-    </div>
-
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
+                    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+                    <script src="script.js"></script>
 </body>
 
 
