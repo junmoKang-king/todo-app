@@ -39,8 +39,8 @@ function setCurrentDayTab() {
     const now = new Date();
     const dayOfWeek = now.getDay();
     const dayMap = {
-        0: 'weekend', 1: 'monday', 2: 'tuesday', 3: 'wednesday',
-        4: 'thursday', 5: 'friday', 6: 'weekend'
+        0: 'sunday', 1: 'monday', 2: 'tuesday', 3: 'wednesday',
+        4: 'thursday', 5: 'friday', 6: 'saturday'
     };
     currentCategory = dayMap[dayOfWeek];
     tabBtns.forEach(btn => {
@@ -91,7 +91,7 @@ function renderTodos() {
     if (filteredTodos.length === 0) {
         const categoryNames = {
             'monday': '월요일', 'tuesday': '화요일', 'wednesday': '수요일',
-            'thursday': '목요일', 'friday': '금요일', 'weekend': '휴일'
+            'thursday': '목요일', 'friday': '금요일', 'saturday': '토요일', 'sunday': '일요일'
         };
         todoList.innerHTML = `<li style="text-align: center; padding: 2rem; color: var(--text-muted);">
             ${categoryNames[currentCategory]} 할 일을 추가해보세요! 🎯</li>`;
@@ -161,7 +161,7 @@ function updateProgress() {
 
 // ==================== 주간 달성률 업데이트 ====================
 function updateWeeklyStats() {
-    const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     let totalPercentage = 0;
     let validDays = 0;
 
@@ -195,21 +195,6 @@ exportExcel.addEventListener('click', () => {
     if (typeof XLSX === 'undefined') {
         alert('엑셀 라이브러리를 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
         return;
-    }
-
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const wb = XLSX.utils.book_new();
-    const categories = [
-        { key: 'monday', name: '월요일' }, { key: 'tuesday', name: '화요일' },
-        { key: 'wednesday', name: '수요일' }, { key: 'thursday', name: '목요일' },
-        { key: 'friday', name: '금요일' }, { key: 'weekend', name: '휴일' }
-    ];
-
-    categories.forEach(cat => {
-        const categoryTodos = todos.filter(t => t.category === cat.key);
-        const data = [['시간', '할 일', '완료', '생성일']];
         categoryTodos.forEach(todo => {
             data.push([
                 todo.time || '-', todo.text,
@@ -221,17 +206,17 @@ exportExcel.addEventListener('click', () => {
         XLSX.utils.book_append_sheet(wb, ws, cat.name);
     });
 
-    const statsData = [['요일', '전체', '완료', '달성률']];
-    categories.forEach(cat => {
-        const categoryTodos = todos.filter(t => t.category === cat.key);
-        const total = categoryTodos.length;
-        const completed = categoryTodos.filter(t => t.completed).length;
-        const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-        statsData.push([cat.name, total, completed, `${percentage}%`]);
-    });
-    const statsWs = XLSX.utils.aoa_to_sheet(statsData);
-    XLSX.utils.book_append_sheet(wb, statsWs, '통계');
-    XLSX.writeFile(wb, `todo_${year}-${month}.xlsx`);
+const statsData = [['요일', '전체', '완료', '달성률']];
+categories.forEach(cat => {
+    const categoryTodos = todos.filter(t => t.category === cat.key);
+    const total = categoryTodos.length;
+    const completed = categoryTodos.filter(t => t.completed).length;
+    const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+    statsData.push([cat.name, total, completed, `${percentage}%`]);
+});
+const statsWs = XLSX.utils.aoa_to_sheet(statsData);
+XLSX.utils.book_append_sheet(wb, statsWs, '통계');
+XLSX.writeFile(wb, `todo_${year}-${month}.xlsx`);
 });
 
 // ==================== 로컬 스토리지 ====================
@@ -247,6 +232,7 @@ function loadTodos() {
             todos = todos.map(todo => {
                 if (!todo.category) return { ...todo, category: 'monday' };
                 if (todo.category === 'weekday') return { ...todo, category: 'monday' };
+                if (todo.category === 'weekend') return { ...todo, category: 'sunday' };
                 return todo;
             });
         } catch (e) {
@@ -324,8 +310,8 @@ saveBtn.addEventListener('click', () => {
 
         const totalCount = todos.length;
         const weekdayCount = todos.filter(t => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(t.category)).length;
-        const weekendCount = todos.filter(t => t.category === 'weekend').length;
-        alert(`✅ 모든 요일의 할 일이 저장되었습니다!\n\n파일명: ${filename}\n총 ${totalCount}개 (주중: ${weekdayCount}개, 휴일: ${weekendCount}개)`);
+        const weekendCount = todos.filter(t => ['saturday', 'sunday'].includes(t.category)).length;
+        alert(`✅ 모든 요일의 할 일이 저장되었습니다!\n\n파일명: ${filename}\n총 ${totalCount}개 (주중: ${weekdayCount}개, 주말: ${weekendCount}개)`);
     } catch (error) {
         alert('저장 중 오류가 발생했습니다: ' + error.message);
     }
@@ -364,8 +350,8 @@ loadBtn.addEventListener('click', () => {
                 updateWeeklyStats();
 
                 const weekdayCount = loadedTodos.filter(t => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(t.category)).length;
-                const weekendCount = loadedTodos.filter(t => t.category === 'weekend').length;
-                alert(`✅ 모든 요일의 할 일을 불러왔습니다!\n\n총 ${loadedTodos.length}개 (주중: ${weekdayCount}개, 휴일: ${weekendCount}개)\n\n각 요일 탭을 클릭하여 확인하세요!`);
+                const weekendCount = loadedTodos.filter(t => ['saturday', 'sunday'].includes(t.category)).length;
+                alert(`✅ 모든 요일의 할 일을 불러왔습니다!\n\n총 ${loadedTodos.length}개 (주중: ${weekdayCount}개, 주말: ${weekendCount}개)\n\n각 요일 탭을 클릭하여 확인하세요!`);
             } catch (error) {
                 alert('파일을 불러오는 중 오류가 발생했습니다: ' + error.message);
             }
@@ -388,27 +374,12 @@ copyBtn.addEventListener('click', () => {
     copiedTodos = currentTodos.map(todo => ({
         text: todo.text,
         time: todo.time,
-        completed: false // 복사할 때는 미완료 상태로
-    }));
-
-    const categoryNames = {
-        'monday': '월요일', 'tuesday': '화요일', 'wednesday': '수요일',
-        'thursday': '목요일', 'friday': '금요일', 'weekend': '휴일'
-    };
-
-    alert(`✅ ${categoryNames[currentCategory]}의 할 일 ${copiedTodos.length}개를 복사했습니다!\n\n다른 요일 탭으로 이동한 후 "다른 요일에 붙여넣기" 버튼을 클릭하세요.`);
-});
-
-// ==================== 다른 요일에 붙여넣기 ====================
-pasteBtn.addEventListener('click', () => {
-    if (copiedTodos.length === 0) {
-        alert('복사된 할 일이 없습니다.\n먼저 "현재 요일 복사" 버튼을 클릭하여 할 일을 복사하세요.');
         return;
     }
 
     const categoryNames = {
         'monday': '월요일', 'tuesday': '화요일', 'wednesday': '수요일',
-        'thursday': '목요일', 'friday': '금요일', 'weekend': '휴일'
+        'thursday': '목요일', 'friday': '금요일', 'saturday': '토요일', 'sunday': '일요일'
     };
 
     const currentCategoryName = categoryNames[currentCategory];
