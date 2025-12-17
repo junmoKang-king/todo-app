@@ -28,14 +28,47 @@
 
         <main class="main">
             <div class="card">
+                <div class="date-navigation">
+                    <button class="date-nav-btn" id="prevWeek" aria-label="이전 주">
+                        ◀
+                    </button>
+                    <div class="current-week" id="currentWeek">
+                        2025년 12월 16일 - 22일
+                    </div>
+                    <button class="date-nav-btn" id="nextWeek" aria-label="다음 주">
+                        ▶
+                    </button>
+                </div>
+
                 <div class="tabs">
-                    <button class="tab-btn active" data-category="monday">월</button>
-                    <button class="tab-btn" data-category="tuesday">화</button>
-                    <button class="tab-btn" data-category="wednesday">수</button>
-                    <button class="tab-btn" data-category="thursday">목</button>
-                    <button class="tab-btn" data-category="friday">금</button>
-                    <button class="tab-btn" data-category="saturday">토</button>
-                    <button class="tab-btn" data-category="sunday">일</button>
+                    <button class="tab-btn active" data-category="monday" data-day="0">
+                        <span class="tab-day">월</span>
+                        <span class="tab-date">12/16</span>
+                    </button>
+                    <button class="tab-btn" data-category="tuesday" data-day="1">
+                        <span class="tab-day">화</span>
+                        <span class="tab-date">12/17</span>
+                    </button>
+                    <button class="tab-btn" data-category="wednesday" data-day="2">
+                        <span class="tab-day">수</span>
+                        <span class="tab-date">12/18</span>
+                    </button>
+                    <button class="tab-btn" data-category="thursday" data-day="3">
+                        <span class="tab-day">목</span>
+                        <span class="tab-date">12/19</span>
+                    </button>
+                    <button class="tab-btn" data-category="friday" data-day="4">
+                        <span class="tab-day">금</span>
+                        <span class="tab-date">12/20</span>
+                    </button>
+                    <button class="tab-btn" data-category="saturday" data-day="5">
+                        <span class="tab-day">토</span>
+                        <span class="tab-date">12/21</span>
+                    </button>
+                    <button class="tab-btn" data-category="sunday" data-day="6">
+                        <span class="tab-day">일</span>
+                        <span class="tab-date">12/22</span>
+                    </button>
                 </div>
 
                 <form class="todo-form" id="todoForm">
@@ -55,6 +88,13 @@
                     <div class="progress-bar-container">
                         <div class="progress-bar" id="progressBar"></div>
                     </div>
+                </div>
+
+                <div class="sort-section">
+                    <button class="sort-btn" id="sortByTime">
+                        <span class="sort-icon">🕐</span>
+                        시간순서 정렬
+                    </button>
                 </div>
 
                 <div class="view-toggle">
@@ -135,17 +175,29 @@
                         현재 요일 복사
                     </button>
                     <button class="paste-btn" id="pasteBtn">
-                        <span class="paste-icon">�</span>
+                        <span class="paste-icon">📌</span>
                         다른 요일에 붙여넣기
                     </button>
-                    <button class="save-btn" id="saveBtn">
-                        <span class="save-icon">💾</span>
-                        전체 저장
-                    </button>
-                    <button class="load-btn" id="loadBtn">
-                        <span class="load-icon">�</span>
-                        전체 불러오기
-                    </button>
+                    <div class="save-group">
+                        <button class="save-btn" id="saveWeek">
+                            <span class="save-icon">💾</span>
+                            현재 주 저장
+                        </button>
+                        <button class="save-btn" id="saveMonth">
+                            <span class="save-icon">📅</span>
+                            이번 달 저장
+                        </button>
+                        <button class="save-btn" id="saveYear">
+                            <span class="save-icon">📆</span>
+                            올해 저장
+                        </button>
+                    </div>
+                    <div class="load-group">
+                        <button class="load-btn" id="loadData">
+                            <span class="load-icon">📂</span>
+                            데이터 불러오기
+                        </button>
+                    </div>
                     <button class="clear-btn" id="clearCompleted">
                         <span class="clear-icon">🗑️</span>
                         완료된 항목 삭제

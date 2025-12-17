@@ -136,12 +136,56 @@ body {
     background: var(--card-bg);
     border-radius: 24px;
     padding: var(--spacing-xl);
-    box-shadow: 0 20px 60px var(--card-shadow);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border);
     transition: all var(--transition-normal);
 }
 
+/* ==================== Date Navigation ==================== */
+.date-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--input-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+.date-nav-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-nav-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    transform: scale(1.05);
+}
+
+.current-week {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+/* ==================== Tabs ==================== */
 /* ==================== 탭 ==================== */
 .tabs {
     display: flex;
@@ -180,8 +224,21 @@ body {
     cursor: pointer;
     transition: all var(--transition-normal);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.25rem;
+}
+
+.tab-day {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.tab-date {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
 }
 
 .tab-btn:hover {
@@ -196,7 +253,48 @@ body {
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
+.tab-btn.active .tab-date {
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 1;
+}
+
+.tab-btn.today {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(167, 139, 250, 0.1));
+}
+
+.tab-btn.today .tab-day {
+    color: var(--accent);
+}
+
 /* ==================== Todo 폼 ==================== */
+.todo-f.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xl);
+}
+
+.save-group,
+.load-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.actions button {
+    width: 120px;
+    padding: var(--spacing-md) var(--spacing-sm);
+    font-size: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
 .todo-form {
     display: flex;
     gap: var(--spacing-md);
@@ -303,11 +401,55 @@ body {
     overflow: hidden;
 }
 
-border-radius: 16px;
-border: 1px solid var(--border);
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 100%);
+    border-radius: 999px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.stats-title {
+/* ==================== Sort Section ==================== */
+.sort-section {
+    margin: var(--spacing-lg) 0;
+    display: flex;
+    justify-content: center;
+}
+
+.sort-btn {
+    padding: 0.7rem 1.5rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sort-btn:hover {
+    background: var(--input-bg);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.sort-btn.active {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.sort-icon {
+    font-size: 1.1rem;
+}
+
+/* ==================== Weekly Stats ==================== */
+.stats-section {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);

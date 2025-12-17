@@ -14,26 +14,162 @@ const todoViewBtn = document.getElementById('todoViewBtn');
 const statsViewBtn = document.getElementById('statsViewBtn');
 const weeklyStats = document.getElementById('weeklyStats');
 const todoListElement = document.getElementById('todoList');
-const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
 const copyBtn = document.getElementById('copyBtn');
 const pasteBtn = document.getElementById('pasteBtn');
+const sortByTime = document.getElementById('sortByTime');
+const prevWeek = document.getElementById('prevWeek');
+const nextWeek = document.getElementById('nextWeek');
+const currentWeekDisplay = document.getElementById('currentWeek');
+const saveWeek = document.getElementById('saveWeek');
+const saveMonth = document.getElementById('saveMonth');
+const saveYear = document.getElementById('saveYear');
+const loadData = document.getElementById('loadData');
 
 // ==================== 상태 관리 ====================
 let todos = [];
 let currentCategory = 'monday';
 let copiedTodos = [];
+let isSortedByTime = false;
+let currentWeekStart = null;  // 현재 주의 시작일 (월요일)
+let selectedDate = null;      // 현재 선택된 날짜
 
 // ==================== 초기화 ====================
 document.addEventListener('DOMContentLoaded', () => {
+    initializeWeek();
     loadTodos();
     loadTheme();
     displayDate();
     setCurrentDayTab();
+    updateDateDisplay();
     renderTodos();
     updateWeeklyStats();
 });
 
+// ==================== 날짜 유틸리티 함수 ====================
+function initializeWeek() {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 월요일로 조정
+    currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() + diff);
+    currentWeekStart.setHours(0, 0, 0, 0);
+}
+
+function getWeekDates(startDate) {
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        dates.push(date);
+    }
+    return dates;
+}
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function formatDateDisplay(date) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
+}
+
+function updateDateDisplay() {
+    const weekDates = getWeekDates(currentWeekStart);
+
+    // 주간 범위 표시 업데이트
+    const startDate = weekDates[0];
+    const endDate = weekDates[6];
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth() + 1;
+    const startDay = startDate.getDate();
+    const endMonth = endDate.getMonth() + 1;
+    const endDay = endDate.getDate();
+
+    currentWeekDisplay.textContent = `${startYear}년 ${startMonth}월 ${startDay}일 - ${endMonth}월 ${endDay}일`;
+
+    // 각 요일 탭의 날짜 업데이트
+    tabBtns.forEach((btn, index) => {
+        const dateSpan = btn.querySelector('.tab-date');
+        if (dateSpan) {
+            dateSpan.textContent = formatDateDisplay(weekDates[index]);
+
+            // 오늘 날짜 강조
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const btnDate = new Date(weekDates[index]);
+            btnDate.setHours(0, 0, 0, 0);
+
+            if (btnDate.getTime() === today.getTime()) {
+                btn.classList.add('today');
+            } else {
+                btn.classList.remove('today');
+            }
+        }
+    });
+
+    // 현재 선택된 날짜 업데이트
+    const dayIndex = parseInt(document.querySelector('.tab-btn.active')?.getAttribute('data-day') || '0');
+    selectedDate = formatDate(weekDates[dayIndex]);
+}
+
+// ==================== 데이터 불러오기 ====================
+loadData.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const loadedTodos = JSON.parse(event.target.result);
+                if (!Array.isArray(loadedTodos)) {
+                    throw new Error('올바른 할 일 목록 파일이 아닙니다.');
+                }
+
+                // 날짜 필드 마이그레이션
+                const migratedTodos = loadedTodos.map(todo => {
+                    if (!todo.date) {
+                        // 날짜가 없는 경우 현재 주의 해당 요일로 설정
+                        const dayMap = { monday: 0, tuesday: 1, wednesday: 2, thursday: 3, friday: 4, saturday: 5, sunday: 6 };
+                        const dayIndex = dayMap[todo.category] || 0;
+                        const weekDates = getWeekDates(currentWeekStart);
+                        todo.date = formatDate(weekDates[dayIndex]);
+                    }
+                    return todo;
+                });
+
+                if (todos.length > 0) {
+                    if (confirm('기존 할 일 목록이 있습니다. 기존 데이터를 유지하고 새 데이터를 추가하시겠습니까?\n\n확인: 추가\n취소: 기존 데이터 삭제 후 불러오기')) {
+                        todos = [...todos, ...migratedTodos];
+                    } else {
+                        todos = migratedTodos;
+                    }
+                } else {
+                    todos = migratedTodos;
+                }
+
+                saveTodos();
+                renderTodos();
+                updateWeeklyStats();
+
+                alert(`✅ 할 일을 불러왔습니다!\n\n총 ${loadedTodos.length}개`);
+            } catch (error) {
+                alert('파일을 불러오는 중 오류가 발생했습니다: ' + error.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+});
 // ==================== 현재 요일 탭 자동 선택 ====================
 function setCurrentDayTab() {
     const now = new Date();
@@ -70,6 +206,7 @@ todoForm.addEventListener('submit', (e) => {
         text: text,
         time: time || null,
         category: currentCategory,
+        date: selectedDate,  // 현재 선택된 날짜 추가
         completed: false,
         createdAt: new Date().toISOString()
     };
@@ -86,7 +223,20 @@ todoForm.addEventListener('submit', (e) => {
 // ==================== Todo 렌더링 ====================
 function renderTodos() {
     todoList.innerHTML = '';
-    const filteredTodos = todos.filter(t => t.category === currentCategory);
+    // 요일 + 날짜로 필터링
+    let filteredTodos = todos.filter(t => t.category === currentCategory && t.date === selectedDate);
+
+    // 시간순 정렬이 활성화된 경우
+    if (isSortedByTime) {
+        filteredTodos = filteredTodos.sort((a, b) => {
+            // 시간이 없는 항목은 맨 뒤로
+            if (!a.time && !b.time) return 0;
+            if (!a.time) return 1;
+            if (!b.time) return -1;
+            // 시간 비교
+            return a.time.localeCompare(b.time);
+        });
+    }
 
     if (filteredTodos.length === 0) {
         const categoryNames = {
@@ -287,6 +437,12 @@ tabBtns.forEach(btn => {
         tabBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentCategory = btn.getAttribute('data-category');
+
+        // 선택된 날짜 업데이트
+        const dayIndex = parseInt(btn.getAttribute('data-day'));
+        const weekDates = getWeekDates(currentWeekStart);
+        selectedDate = formatDate(weekDates[dayIndex]);
+
         renderTodos();
     });
 });
@@ -306,79 +462,96 @@ statsViewBtn.addEventListener('click', () => {
     weeklyStats.style.display = 'block';
 });
 
-// ==================== 수동 저장 ====================
-saveBtn.addEventListener('click', () => {
+// ==================== 주간 저장 ====================
+saveWeek.addEventListener('click', () => {
     try {
-        const dataStr = JSON.stringify(todos, null, 2);
+        const weekDates = getWeekDates(currentWeekStart);
+        const startDate = formatDate(weekDates[0]);
+        const endDate = formatDate(weekDates[6]);
+
+        const weekTodos = todos.filter(t => t.date >= startDate && t.date <= endDate);
+
+        const dataStr = JSON.stringify(weekTodos, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(dataBlob);
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const filename = `todo_backup_${year}${month}${day}.json`;
+
+        const filename = `todo_week_${startDate}_${endDate}.json`;
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         link.click();
         URL.revokeObjectURL(url);
 
-        const totalCount = todos.length;
-        const weekdayCount = todos.filter(t => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(t.category)).length;
-        const weekendCount = todos.filter(t => ['saturday', 'sunday'].includes(t.category)).length;
-        alert(`✅ 모든 요일의 할 일이 저장되었습니다!\n\n파일명: ${filename}\n총 ${totalCount}개 (주중: ${weekdayCount}개, 주말: ${weekendCount}개)`);
+        alert(`✅ 현재 주의 할 일이 저장되었습니다!\n\n파일명: ${filename}\n총 ${weekTodos.length}개`);
     } catch (error) {
         alert('저장 중 오류가 발생했습니다: ' + error.message);
     }
 });
 
-// ==================== 수동 로드 ====================
-loadBtn.addEventListener('click', () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
+// ==================== 월간 저장 ====================
+saveMonth.addEventListener('click', () => {
+    try {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
 
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const monthTodos = todos.filter(t => {
+            if (!t.date) return false;
+            const todoDate = new Date(t.date);
+            return todoDate.getFullYear() === year && todoDate.getMonth() + 1 === month;
+        });
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const loadedTodos = JSON.parse(event.target.result);
-                if (!Array.isArray(loadedTodos)) {
-                    throw new Error('올바른 할 일 목록 파일이 아닙니다.');
-                }
+        const dataStr = JSON.stringify(monthTodos, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
 
-                if (todos.length > 0) {
-                    if (confirm('기존 할 일 목록이 있습니다. 기존 데이터를 유지하고 새 데이터를 추가하시겠습니까?\n\n확인: 추가\n취소: 기존 데이터 삭제 후 불러오기')) {
-                        todos = [...todos, ...loadedTodos];
-                    } else {
-                        todos = loadedTodos;
-                    }
-                } else {
-                    todos = loadedTodos;
-                }
+        const monthStr = String(month).padStart(2, '0');
+        const filename = `todo_month_${year}-${monthStr}.json`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
 
-                saveTodos();
-                renderTodos();
-                updateWeeklyStats();
+        alert(`✅ ${year}년 ${month}월의 할 일이 저장되었습니다!\n\n파일명: ${filename}\n총 ${monthTodos.length}개`);
+    } catch (error) {
+        alert('저장 중 오류가 발생했습니다: ' + error.message);
+    }
+});
 
-                const weekdayCount = loadedTodos.filter(t => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(t.category)).length;
-                const weekendCount = loadedTodos.filter(t => ['saturday', 'sunday'].includes(t.category)).length;
-                alert(`✅ 모든 요일의 할 일을 불러왔습니다!\n\n총 ${loadedTodos.length}개 (주중: ${weekdayCount}개, 주말: ${weekendCount}개)\n\n각 요일 탭을 클릭하여 확인하세요!`);
-            } catch (error) {
-                alert('파일을 불러오는 중 오류가 발생했습니다: ' + error.message);
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
+// ==================== 연간 저장 ====================
+saveYear.addEventListener('click', () => {
+    try {
+        const now = new Date();
+        const year = now.getFullYear();
+
+        const yearTodos = todos.filter(t => {
+            if (!t.date) return false;
+            const todoDate = new Date(t.date);
+            return todoDate.getFullYear() === year;
+        });
+
+        const dataStr = JSON.stringify(yearTodos, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+
+        const filename = `todo_year_${year}.json`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+
+        alert(`✅ ${year}년의 할 일이 저장되었습니다!\n\n파일명: ${filename}\n총 ${yearTodos.length}개`);
+    } catch (error) {
+        alert('저장 중 오류가 발생했습니다: ' + error.message);
+    }
 });
 
 // ==================== 현재 요일 복사 ====================
 copyBtn.addEventListener('click', () => {
-    const currentTodos = todos.filter(t => t.category === currentCategory);
+    // 현재 선택된 요일 + 날짜의 할 일만 복사
+    const currentTodos = todos.filter(t => t.category === currentCategory && t.date === selectedDate);
 
     if (currentTodos.length === 0) {
         alert('복사할 할 일이 없습니다.');
@@ -412,7 +585,8 @@ pasteBtn.addEventListener('click', () => {
     };
 
     const currentCategoryName = categoryNames[currentCategory];
-    const existingCount = todos.filter(t => t.category === currentCategory).length;
+    // 현재 선택된 날짜의 할 일 개수 확인
+    const existingCount = todos.filter(t => t.category === currentCategory && t.date === selectedDate).length;
 
     let message = `${currentCategoryName}에 ${copiedTodos.length}개의 할 일을 붙여넣으시겠습니까?`;
     if (existingCount > 0) {
@@ -426,6 +600,7 @@ pasteBtn.addEventListener('click', () => {
                 text: copiedTodo.text,
                 time: copiedTodo.time,
                 category: currentCategory,
+                date: selectedDate,  // 현재 선택된 날짜 추가
                 completed: false,
                 createdAt: new Date().toISOString()
             };
@@ -438,6 +613,34 @@ pasteBtn.addEventListener('click', () => {
 
         alert(`✅ ${currentCategoryName}에 ${copiedTodos.length}개의 할 일을 추가했습니다!`);
     }
+});
+
+// ==================== 시간순 정렬 ====================
+sortByTime.addEventListener('click', () => {
+    isSortedByTime = !isSortedByTime;
+
+    if (isSortedByTime) {
+        sortByTime.classList.add('active');
+        sortByTime.innerHTML = '<span class="sort-icon">🕐</span> 시간순서 정렬 (활성)';
+    } else {
+        sortByTime.classList.remove('active');
+        sortByTime.innerHTML = '<span class="sort-icon">🕐</span> 시간순서 정렬';
+    }
+
+    renderTodos();
+});
+
+// ==================== 주간 네비게이션 ====================
+prevWeek.addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+    updateDateDisplay();
+    renderTodos();
+});
+
+nextWeek.addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    updateDateDisplay();
+    renderTodos();
 });
 
 // ==================== 키보드 단축키 ====================
