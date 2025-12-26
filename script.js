@@ -24,6 +24,17 @@ const saveWeek = document.getElementById('saveWeek');
 const saveMonth = document.getElementById('saveMonth');
 const saveYear = document.getElementById('saveYear');
 const loadData = document.getElementById('loadData');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const modalOverlay = document.getElementById('modalOverlay');
+const modalClose = document.getElementById('modalClose');
+const saveSettings = document.getElementById('saveSettings');
+const clearSettings = document.getElementById('clearSettings');
+const githubToken = document.getElementById('githubToken');
+const githubRepo = document.getElementById('githubRepo');
+const githubBranch = document.getElementById('githubBranch');
+const syncToServer = document.getElementById('syncToServer');
+const syncFromServer = document.getElementById('syncFromServer');
 
 // ==================== 상태 관리 ====================
 let todos = [];
@@ -32,6 +43,122 @@ let copiedTodos = [];
 let isSortedByTime = false;
 let currentWeekStart = null;  // 현재 주의 시작일 (월요일)
 let selectedDate = null;      // 현재 선택된 날짜
+
+// ==================== GitHub Sync 클래스 ====================
+class GitHubSync {
+    constructor() {
+        this.token = localStorage.getItem('github_token');
+        this.repo = localStorage.getItem('github_repo');
+        this.branch = localStorage.getItem('github_branch') || 'main';
+        this.filePath = 'data/todos.json';
+    }
+
+    isConfigured() {
+        return this.token && this.repo;
+    }
+
+    async getFileSHA() {
+        try {
+            const response = await fetch(
+                `https://api.github.com/repos/${this.repo}/contents/${this.filePath}?ref=${this.branch}`,
+                {
+                    headers: {
+                        'Authorization': `token ${this.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.sha;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting file SHA:', error);
+            return null;
+        }
+    }
+
+    async saveToGitHub(data) {
+        if (!this.isConfigured()) {
+            throw new Error('GitHub 설정이 필요합니다. 설정 버튼을 클릭하여 Token과 Repository를 입력하세요.');
+        }
+
+        try {
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+            const sha = await this.getFileSHA();
+
+            const body = {
+                message: `Update todos - ${new Date().toISOString()}`,
+                content: content,
+                branch: this.branch
+            };
+
+            if (sha) {
+                body.sha = sha;
+            }
+
+            const response = await fetch(
+                `https://api.github.com/repos/${this.repo}/contents/${this.filePath}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${this.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                }
+            );
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'GitHub API 오류');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error saving to GitHub:', error);
+            throw error;
+        }
+    }
+
+    async loadFromGitHub() {
+        if (!this.isConfigured()) {
+            throw new Error('GitHub 설정이 필요합니다. 설정 버튼을 클릭하여 Token과 Repository를 입력하세요.');
+        }
+
+        try {
+            const response = await fetch(
+                `https://api.github.com/repos/${this.repo}/contents/${this.filePath}?ref=${this.branch}`,
+                {
+                    headers: {
+                        'Authorization': `token ${this.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('서버에 저장된 데이터가 없습니다.');
+                }
+                const error = await response.json();
+                throw new Error(error.message || 'GitHub API 오류');
+            }
+
+            const data = await response.json();
+            const content = decodeURIComponent(escape(atob(data.content)));
+            return JSON.parse(content);
+        } catch (error) {
+            console.error('Error loading from GitHub:', error);
+            throw error;
+        }
+    }
+}
+
+const githubSync = new GitHubSync();
 
 // ==================== 초기화 ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -641,6 +768,149 @@ nextWeek.addEventListener('click', () => {
     currentWeekStart.setDate(currentWeekStart.getDate() + 7);
     updateDateDisplay();
     renderTodos();
+});
+
+// ==================== 설정 모달 ====================
+settingsBtn.addEventListener('click', () => {
+    settingsModal.classList.add('active');
+    // 기존 설정 불러오기
+    githubToken.value = localStorage.getItem('github_token') || '';
+    githubRepo.value = localStorage.getItem('github_repo') || '';
+    githubBranch.value = localStorage.getItem('github_branch') || 'main';
+});
+
+modalClose.addEventListener('click', () => {
+    settingsModal.classList.remove('active');
+});
+
+modalOverlay.addEventListener('click', () => {
+    settingsModal.classList.remove('active');
+});
+
+saveSettings.addEventListener('click', () => {
+    const token = githubToken.value.trim();
+    const repo = githubRepo.value.trim();
+    const branch = githubBranch.value.trim() || 'main';
+
+    if (!token || !repo) {
+        alert('Token과 Repository를 모두 입력해주세요.');
+        return;
+    }
+
+    localStorage.setItem('github_token', token);
+    localStorage.setItem('github_repo', repo);
+    localStorage.setItem('github_branch', branch);
+
+    // GitHubSync 인스턴스 업데이트
+    githubSync.token = token;
+    githubSync.repo = repo;
+    githubSync.branch = branch;
+
+    settingsModal.classList.remove('active');
+    alert('✅ GitHub 설정이 저장되었습니다!');
+});
+
+clearSettings.addEventListener('click', () => {
+    if (confirm('GitHub 설정을 삭제하시겠습니까?')) {
+        localStorage.removeItem('github_token');
+        localStorage.removeItem('github_repo');
+        localStorage.removeItem('github_branch');
+        githubToken.value = '';
+        githubRepo.value = '';
+        githubBranch.value = 'main';
+        githubSync.token = null;
+        githubSync.repo = null;
+        githubSync.branch = 'main';
+        alert('✅ GitHub 설정이 삭제되었습니다.');
+    }
+});
+
+// ==================== 서버에 저장 ====================
+syncToServer.addEventListener('click', async () => {
+    if (!githubSync.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.\n\n설정 버튼(⚙️)을 클릭하여 Token과 Repository를 입력하세요.');
+        return;
+    }
+
+    try {
+        syncToServer.disabled = true;
+        syncToServer.innerHTML = '<span class="sync-icon">⏳</span> 저장 중...';
+
+        await githubSync.saveToGitHub(todos);
+
+        syncToServer.innerHTML = '<span class="sync-icon">✅</span> 저장 완료!';
+        setTimeout(() => {
+            syncToServer.innerHTML = '<span class="sync-icon">☁️</span> 서버에 저장';
+            syncToServer.disabled = false;
+        }, 2000);
+
+        alert(`✅ 서버에 저장되었습니다!\n\n저장소: ${githubSync.repo}\n파일: ${githubSync.filePath}\n총 ${todos.length}개의 할 일`);
+    } catch (error) {
+        syncToServer.innerHTML = '<span class="sync-icon">❌</span> 저장 실패';
+        setTimeout(() => {
+            syncToServer.innerHTML = '<span class="sync-icon">☁️</span> 서버에 저장';
+            syncToServer.disabled = false;
+        }, 2000);
+
+        alert(`❌ 서버 저장 실패\n\n${error.message}\n\n설정을 확인해주세요.`);
+    }
+});
+
+// ==================== 서버에서 불러오기 ====================
+syncFromServer.addEventListener('click', async () => {
+    if (!githubSync.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.\n\n설정 버튼(⚙️)을 클릭하여 Token과 Repository를 입력하세요.');
+        return;
+    }
+
+    try {
+        syncFromServer.disabled = true;
+        syncFromServer.innerHTML = '<span class="sync-icon">⏳</span> 불러오는 중...';
+
+        const serverTodos = await githubSync.loadFromGitHub();
+
+        syncFromServer.innerHTML = '<span class="sync-icon">📥</span> 서버에서 불러오기';
+        syncFromServer.disabled = false;
+
+        if (!Array.isArray(serverTodos)) {
+            throw new Error('올바른 할 일 목록 파일이 아닙니다.');
+        }
+
+        // 날짜 필드 마이그레이션
+        const migratedTodos = serverTodos.map(todo => {
+            if (!todo.date) {
+                const dayMap = { monday: 0, tuesday: 1, wednesday: 2, thursday: 3, friday: 4, saturday: 5, sunday: 6 };
+                const dayIndex = dayMap[todo.category] || 0;
+                const weekDates = getWeekDates(currentWeekStart);
+                todo.date = formatDate(weekDates[dayIndex]);
+            }
+            return todo;
+        });
+
+        if (todos.length > 0) {
+            if (confirm('기존 할 일 목록이 있습니다. 기존 데이터를 유지하고 새 데이터를 추가하시겠습니까?\n\n확인: 추가\n취소: 기존 데이터 삭제 후 불러오기')) {
+                todos = [...todos, ...migratedTodos];
+            } else {
+                todos = migratedTodos;
+            }
+        } else {
+            todos = migratedTodos;
+        }
+
+        saveTodos();
+        renderTodos();
+        updateWeeklyStats();
+
+        alert(`✅ 서버에서 불러왔습니다!\n\n총 ${serverTodos.length}개의 할 일`);
+    } catch (error) {
+        syncFromServer.innerHTML = '<span class="sync-icon">❌</span> 불러오기 실패';
+        setTimeout(() => {
+            syncFromServer.innerHTML = '<span class="sync-icon">📥</span> 서버에서 불러오기';
+            syncFromServer.disabled = false;
+        }, 2000);
+
+        alert(`❌ 서버 불러오기 실패\n\n${error.message}\n\n설정을 확인해주세요.`);
+    }
 });
 
 // ==================== 키보드 단축키 ====================
